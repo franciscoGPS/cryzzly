@@ -252,12 +252,13 @@ class Dataframe(Any)
     plt.set_title(title)
     
 
-    pp "Image stored in: " + filename
+    pp "Image stored in: " + filename + ".png"
     plt.savefig(filename+".png")
     plt.close
   end
   
   private def save_csv(filename, data)
+    pp "File stored in: " + filename + ".csv"
     File.write(filename+".csv", data)
   end
 end

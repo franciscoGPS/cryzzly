@@ -1,7 +1,6 @@
 name: cryzzly
 
-version: 0.1.0
-crystal: 0.34.0
+version: 0.1.1
 
 authors: 
   - Francisco Cordero. <fco.coma@gmail.com>
@@ -9,11 +8,12 @@ authors:
 description: |
   Crystal library for Data Analysis.
 
+crystal: 0.34.0
+
 
 dependencies:
   aquaplot:
     github: crystal-data/aquaplot
-    version: 
   opencl:
     github: crystal-data/opencl.cr
   num:
@@ -22,4 +22,4 @@ targets:
   shards:
     main: src/cryzzly.cr
 
-    license: MIT
+license: MIT

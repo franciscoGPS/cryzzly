@@ -9,7 +9,6 @@ description: |
 
 crystal: 0.34.0
 
-
 dependencies:
   aquaplot:
     github: crystal-data/aquaplot
@@ -17,8 +16,5 @@ dependencies:
     github: crystal-data/opencl.cr
   num:
     github: crystal-data/num.cr
-targets:
-  shards:
-    main: src/cryzzly.cr
 
 license: MIT

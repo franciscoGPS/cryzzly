@@ -6,8 +6,4 @@ module Cryzzly
     def self.version
       "Cryzzly v#{VERSION} "
     end
-
 end
-
-
-  

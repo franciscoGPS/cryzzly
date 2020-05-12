@@ -1,4 +1,6 @@
 # Cryzzly
+[![GitHub release](https://img.shields.io/github/release/franciscoGPS/cryzzly.svg)](https://github.com/franciscoGPS/cryzzly/releases)
+
 
 Crystal for data analysis
 

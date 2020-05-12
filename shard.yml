@@ -1,0 +1,9 @@
+name: cryzzly
+version: 0.1.0
+
+authors:
+  - Francisco C. <fco.coma@gmail.com>
+
+crystal: 0.34.0
+
+license: MIT

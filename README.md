@@ -1,6 +1,7 @@
-# cryzzly
+# Cryzzly
 
-TODO: Write a description here
+Crystal for data analysis
+
 
 ## Installation
 
@@ -9,7 +10,7 @@ TODO: Write a description here
    ```yaml
    dependencies:
      cryzzly:
-       github: your-github-user/cryzzly
+       github: franciscoGPS/cryzzly
    ```
 
 2. Run `shards install`
@@ -37,3 +38,51 @@ TODO: Write development instructions here
 ## Contributors
 
 - [Francisco C.](https://github.com/your-github-user) - creator and maintainer
+
+
+```crystal
+require "cryzzly"
+
+
+# Load CSV file 
+df = Cryzzly::DataFrame(Any).load_data("my_csv.csv", index_col: 0, index_type: "datetime" )
+
+# From matrix array
+df = Dataframe(Float64).new([[1,2,3], [4,5,6]], ["col_1","col_2","col_3"])
+
+
+# Return headers list
+df.headers
+
+# Sum of specified column keys
+df.sum("col_1","col_2", "col_3")
+
+# Mean of specified column keys
+df.mean("col_1","col_2", "col_3")
+
+# Amount of columns 
+df.length
+
+# Shape of dataset
+df.shape
+
+# Minimum value of specified column keys 
+df.min("col_1","col_2", "col_3")  
+ 
+# Maximum value of specified column keys
+df.max("col_1","col_2", "col_3")
+ 
+# Standard deviation
+df.std("col_1","col_2", "col_3")
+
+# Uses Aquaplot to plot files. Stored on specified location
+
+df.plot("col_1","col_2", "col_3", filename: "my_plot")
+## Output "Image stored in: my_plot.png"
+
+
+df.to_csv("col_1","col_2", "col_3", filename: "my_csv")
+## Output "Image stored in: my_csv.csv"
+
+
+```

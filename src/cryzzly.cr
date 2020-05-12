@@ -1,18 +1,12 @@
-# TODO: Write documentation for `Cryzzly`
+require "./cryzzly/*"
 module Cryzzly
-  VERSION = "0.0.1"
-
-    def self.lib_version
-      v = Lib.version
-      {v.major, v.minor, v.patch}
-    end
-
+  VERSION = "0.1.1"
+  
     def self.version
-      "Cryzzly v#{VERSION} ( v#{lib_version.join('.')})"
+      "Cryzzly v#{VERSION} "
     end
 
 end
 
-require "./cryzzly/*"
 
   

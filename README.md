@@ -71,9 +71,9 @@ df.to_csv("col_1","col_2", "col_3", filename: "my_csv")
   <img src="spec/my_plot.png" alt="@cryzzly Diagram" />
 </p>
 
-## Development
+## TODO:
 
-### String and timestamp column analysis
+### String and timestamp column analysis 
   - [] count
   - [] unique
   - [] top

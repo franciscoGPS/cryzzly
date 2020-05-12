@@ -68,16 +68,16 @@ df.to_csv("col_1","col_2", "col_3", filename: "my_csv")
 
 ```
 <p align="center">
-  <img src="spec/myplot.png" alt="@cryzzly Diagram" />
+  <img src="spec/my_plot.png" alt="@cryzzly Diagram" />
 </p>
 
 ## Development
 
 ### String and timestamp column analysis
-  ⋅⋅* count
-  ⋅⋅* unique
-  ⋅⋅* top
-  ⋅⋅* freq
+  - [] count
+  - [] unique
+  - [] top
+  - [] freq
 
 ## Contributing
 

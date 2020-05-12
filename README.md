@@ -2,7 +2,7 @@
 [![GitHub release](https://img.shields.io/github/release/franciscoGPS/cryzzly.svg)](https://github.com/franciscoGPS/cryzzly/releases)
 
 
-Crystal for data analysis
+Crystal library for data analysis
 
 
 ## Installation
@@ -57,7 +57,7 @@ df.std("col_1","col_2", "col_3")
 
 # Uses Aquaplot to plot files. Stored on specified location
 
-df.plot("col_1","col_2", "col_3", filename: "my_plot")
+df.plot("col_1","col_2", filename: "my_plot")
 ## Output "Image stored in: my_plot.png"
 
 
@@ -65,7 +65,11 @@ df.to_csv("col_1","col_2", "col_3", filename: "my_csv")
 ## Output "Image stored in: my_csv.csv"
 
 
+
 ```
+<p align="center">
+  <img src="src/myplot.png" alt="@cryzzly Diagram" />
+</p>
 
 ## Development
 

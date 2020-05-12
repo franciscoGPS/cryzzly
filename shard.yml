@@ -14,7 +14,6 @@ dependencies:
   aquaplot:
     github: crystal-data/aquaplot
     version: 
-  #Needed by Num
   opencl:
     github: crystal-data/opencl.cr
   num:

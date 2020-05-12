@@ -63,7 +63,7 @@ df.plot("col_1","col_2", filename: "my_plot")
 
 
 df.to_csv("col_1","col_2", "col_3", filename: "my_csv")
-## Output "Image stored in: my_csv.csv"
+## Output "File stored in: my_csv.csv"
 
 
 

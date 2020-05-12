@@ -47,12 +47,12 @@ describe Cryzzly do
   end
 
   it "plots and save the series" do
-    df.plot("col1", "col2", "col3", "col4", filename: "my_plot")
+    df.plot("col3", "col4", filename: "my_plot")
     File.open("my_plot.png").should_not eq(nil)
   end
 
   it "exports to csv" do
-    df.to_csv("col3", "col4", filename: "my_csvsheet")
+    df.to_csv("col1", "col2", "col3", "col4", filename: "my_csvsheet")
     File.open("my_csvsheet.csv").should_not eq(nil)
   end
 end

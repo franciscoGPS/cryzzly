@@ -1,4 +1,5 @@
 require "./cryzzly/*"
+require "./cryzzly/utils/*"
 module Cryzzly
   VERSION = "0.1.1"
   

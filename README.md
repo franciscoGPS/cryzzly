@@ -2,7 +2,8 @@
 [![GitHub release](https://img.shields.io/github/release/franciscoGPS/cryzzly.svg)](https://github.com/franciscoGPS/cryzzly/releases)
 
 
-Crystal library for data analysis
+Crystal library for data analysis.
+Inspired by [Pandas](https://pandas.pydata.org/)
 
 
 ## Installation

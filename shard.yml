@@ -7,7 +7,7 @@ authors:
   - Francisco Cordero. <fco.coma@gmail.com>
 
 description: |
-  Crystal for Data Analysis
+  Crystal library for Data Analysis.
 
 
 dependencies:

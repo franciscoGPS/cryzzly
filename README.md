@@ -68,7 +68,7 @@ df.to_csv("col_1","col_2", "col_3", filename: "my_csv")
 
 ```
 <p align="center">
-  <img src="src/myplot.png" alt="@cryzzly Diagram" />
+  <img src="spec/myplot.png" alt="@cryzzly Diagram" />
 </p>
 
 ## Development

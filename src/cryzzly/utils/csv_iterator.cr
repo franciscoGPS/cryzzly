@@ -1,3 +1,4 @@
+require "csv"
 #will return headers if headers = true 
 def each_csv_row(filename, headers) : Array(String)
   File.open(filename) do |infile|

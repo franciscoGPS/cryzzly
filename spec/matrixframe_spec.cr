@@ -5,7 +5,7 @@ describe Cryzzly do
   
   filename = "./spec/sample.csv"
   
-  df = Dataframe(Any).load_csv(filename, index_col: 0, index_type: "datetime" )
+  df = Matrixframe.load_csv(filename, index_col: 0, index_type: "datetime" )
   it "loads data from CSV file" do
     df.should_not eq(nil)
   end

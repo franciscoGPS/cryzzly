@@ -26,7 +26,7 @@ require "cryzzly"
 
 
 # Load CSV file 
-df = Cryzzly::DataFrame(Any).load_data("my_csv.csv", index_col: 0, index_type: "datetime" )
+df = DataFrame(Any).load_data("my_csv.csv", index_col: 0, index_type: "datetime" )
 
 # From matrix array
 df = Dataframe(Float64).new([[1,2,3], [4,5,6]], ["col_1","col_2","col_3"])

@@ -13,7 +13,7 @@ class Foo(U)
   def initialize(@value : U)
   end
 end
-
+ 
 foo = Foo.new(1)
 #pp foo.t
 
@@ -27,15 +27,15 @@ row = %({
   }
 )
 
-pull = JSON::PullParser.new(row)
-pp pull.read_begin_object 
-pp pull.read_object_key # => "line" 
-pp pull.read_begin_array
-pp pull.read_string # => "three"
-pp pull.read_int    # => 1
-pp pull.read_float  # => 1.0
-pp pull.read_string # => "three"
-pp pull.read_end_array
+#pull = JSON::PullParser.new(row)
+#pp pull.read_begin_object 
+#pp pull.read_object_key # => "line" 
+#pp pull.read_begin_array
+#pp pull.read_string # => "three"
+#pp pull.read_int    # => 1
+#pp pull.read_float  # => 1.0
+#pp pull.read_string # => "three"
+#pp pull.read_end_array
 
 #pp pull.read_string # => "values"
 #pp pull.read_begin_array
@@ -43,18 +43,18 @@ pp pull.read_end_array
 # Array(Foo(Int32) | Foo(String)).new' with type 
 # Array(Foo(Int32) | Foo(String))
 
-filename = "./src/cryzzly/dev/sample.csv"
-
-df = Dataframe(Any).load_csv(filename, index_col: 0, index_type: "datetime")
-pp df.sum("col1", "col2", "col3", "col4")
-
-pp df.mean("col1", "col2", "col3", "col4")
-
-df = Matrixframe.load_csv(filename, index_col: 0, index_type: "datetime", col_type: Float64)
-
-pp df.sum("col1", "col2", "col3", "col4")
-
-pp df.mean("col1", "col2", "col3", "col4")
+#filename = "./src/cryzzly/dev/sample.csv"
+#
+#df = Dataframe(Any).load_csv(filename, index_col: 0, index_type: "datetime")
+#pp df.sum("col1", "col2", "col3", "col4")
+#
+#pp df.mean("col1", "col2", "col3", "col4")
+#
+#df = Matrixframe.load_csv(filename, index_col: 0, index_type: "datetime", col_type: Float64)
+#
+#pp df.sum("col1", "col2", "col3", "col4")
+#
+#pp df.mean("col1", "col2", "col3", "col4")
 
 
 

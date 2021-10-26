@@ -3,38 +3,23 @@ require "num"
 require "./../utils/*"
 require "aquaplot"
 
-
-
 class Matrix
-  
-  SUMMABLE_TYPES = [Int8, Int16, Int32, Int64, Float32, Float64]
-  STORE_MAPPINGS = [Int8, Int16, Int32, Int64, Float32, Float64]
-  macro define_datatype
-    alias StoreTypes = Union({{*STORE_MAPPINGS}})
-    alias SummableTypes = Union({{*SUMMABLE_TYPES}})
-  end
-  
+  include Calculations
 
-  macro add_store_types(type)
-    {{STORE_MAPPINGS.push(type)}}
-  end
-
-  add_store_types(String)
-  define_datatype
 
   def self.resolve_matrix_type
     [] of Array(StoreTypes)
   end
 
   getter headers : Array(String)
-  getter headers : Array(String)
+  getter col_types : Array(String)
   getter index_col : Int32
   getter data : Array(Array(StoreTypes))
 
- def initialize(data, headers = [] of String, index_col = -1, col_type = [] of String)
+ def initialize(data, headers = [] of String, index_col = -1, col_types = [] of String)
     @headers = headers
     @data = data
-    @col_type = col_type
+    @col_types = col_types
     @index_col = index_col
     begin
       Tensor.from_array(data)
@@ -48,7 +33,7 @@ class Matrix
     index_col > 0 && index_type == "datetime" && col_type != nil
   end
   
-  def self.load_csv(filename, index_col = -1, index_type="datetime", index_format="%Y-%m-%d %H:%M:%S", headers = true, col_type = [] of String )
+  def self.load_csv(filename, index_col = -1, index_type="datetime", index_format="%Y-%m-%d %H:%M:%S", headers = true, cols_types = [] of String )
     pp "Loading CSV File"
     pp "Filename: " + filename
     pp "Index column: " + index_col.to_s
@@ -60,14 +45,13 @@ class Matrix
     headers = true
     headers_array = each_csv_row(filename, headers: headers) do |parser|
       temp_row = [] of StoreTypes
-      consider_index = parse_index?(index_type, col_type, index_col)
+      consider_index = parse_index?(index_type, cols_types, index_col)
       parser.row.to_a.each_with_index do  |val, index|
   
         if consider_index && index == index_col
-          #index_type
-          parsed =  parse_index_column(val, col_type[index], index_format)
+          parsed =  parse_index_column(val, cols_types[index], index_format)
         else
-          parsed = parse_col(val, col_type[index])
+          parsed = parse_col(val, cols_types[index])
         end
         temp_row.push(parsed)
       end
@@ -78,7 +62,7 @@ class Matrix
       headers_array = gen_col_names(size)
     end 
   
-    Matrix.new(data, headers_array, index_col, col_type)
+    Matrix.new(data, headers_array, index_col, cols_types)
   end
 
   def self.parse_index_column(value, index_type, index_format)
@@ -123,71 +107,36 @@ class Matrix
       val.to_s
     end
   end
+
+  def get_type_from_string(value_type)
+    begin    
+      case value_type
+      when "Int8"
+        Int8
+      when "Int16"
+        Int16
+      when "Int32"
+        Int32
+      when "Int64"
+        Int64
+      when "Float32"
+        Float32
+      when "Float64"
+        Float64
+      when "String"
+        String
+      else
+        String
+      end
+    rescue
+      String
+    end
+  end
   
   private def each_row
     @data.as(Array).each do |row|
       yield row
     end
-  end
-
-  def shape
-    #[columns number, size of each column
-    [length, @data.size]
-  end
-
-  def length
-    #columns number
-    
-    @data[0].size#.this.as(Array).size
-  end
-
-
-  def mean(*columns : String)
-    avgs = {} of String => StoreTypes
-    column_size = shape[1]
-    sum(*columns).data[0].each_with_index do |sum_item, index|
-      avgs[columns[index]] = sum_item.as(SummableTypes) / column_size if column_size > 0
-    end
-    Matrix.new([avgs.values], avgs.keys )
-  end
-
-  def summable_type(col_type)
-    SUMMABLE_TYPES.includes?(col_type)
-  end
-
-  #def sum(*columns : String )
-  #  pp @col_type
-  #  sums = {} of String =>  StoreTypes
-  #  to_array(*columns).each_with_index do |array_tuple, index|
-  #    sums[columns[index]] = array_tuple[1].sum
-  #  end
-  #  Matrix.new([sums.values], sums.keys)
-  #end
-
-  def sum(*columns : String )
-    sums = {} of String =>  StoreTypes
-    to_array(*columns).each_with_index do |array_tuple, index|
-      sum = 0
-      array_tuple[1].map{ |e| sum += e.as(SummableTypes) }
-      sums[columns[index]] = sum.as(SummableTypes)
-    end
-    Matrix.new([sums.values], sums.keys)
-  end
-
-  def min(*columns : String)
-    mins = {} of String => StoreTypes
-    to_array(*columns).each_with_index do |array_tuple, index|
-      mins[columns[index]] =  array_tuple[1].min 
-    end
-    Matrix.new([mins.values], mins.keys)
-  end
-
-  def max(*columns : String)
-    maxs = {} of String => StoreTypes
-    to_array(*columns).each_with_index do |array_tuple, index|
-      maxs[columns[index]] = array_tuple[1].max       
-    end
-    Matrix.new([maxs.values], maxs.keys)
   end
 
   def find_indexes(*columns : String)
@@ -200,6 +149,37 @@ class Matrix
     end
     indexes.delete_at(0) ## Cleaning empty objects when initializing
     indexes
+  end
+
+  # def select(*columns, &block)
+  #   to_array(*columns).each_with_index do |array_tuple, index|
+  #     yield array_tuple, index
+  #   end
+  # end
+
+  def select(*columns : String, &block)
+    arrays = {} of String => Array(StoreTypes)
+    indexes = find_indexes(*columns)
+    indexes.each_with_index do |col, index|
+      series = [] of StoreTypes
+      #pp col
+      #pp index
+
+      each_row do |row|
+        #pp row
+        value = row.as(Array)[col.first_value]
+        #pp value
+        value_type = col_types[col.first_value]
+        begin
+          series.push(value) if yield Matrix.parse_col(value, col.first_value), col, col.first_value
+        rescue ex
+          pp ex
+          pp "Not a float: " + @headers[col.first_value] + " row: "  + index.to_s
+        end
+        arrays[col.first_key] = series
+      end
+    end
+    arrays
   end
 
   private def to_array(*columns : String)
@@ -219,5 +199,9 @@ class Matrix
       end
     end
     arrays
+  end
+
+  def self.gen_col_names(num)
+    (1..num).map { |i| "col_#{i}" }
   end
 end

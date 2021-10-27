@@ -19,7 +19,8 @@ pp df.max("col1", "col2", "col3", "col4")
 
 result = df.select("col5", "col2", "col1", "col3", "col4") do |value, column, value_type|
   column.first_key == "col5" && value == "a" || 
-  column.first_key == "col3" && value.as(Float64) >= 0.71
+  column.first_key == "col3" && value.as(Float64) >= 0.71 ||
+  column.first_key == "col2" && value.as(Int32) % 2 == 1
 end
 
 pp result

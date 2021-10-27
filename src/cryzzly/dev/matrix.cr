@@ -134,8 +134,8 @@ class Matrix
   end
   
   private def each_row
-    @data.as(Array).each do |row|
-      yield row
+    @data.as(Array).each_with_index do |row, index|
+      yield row, index
     end
   end
 
@@ -158,20 +158,20 @@ class Matrix
   # end
 
   def select(*columns : String, &block)
-    arrays = {} of String => Array(StoreTypes)
+    arrays = {} of String => Array(NamedTuple(i: Int32, v: StoreTypes))
     indexes = find_indexes(*columns)
     indexes.each_with_index do |col, index|
-      series = [] of StoreTypes
+      series = [] of NamedTuple(i: Int32, v: StoreTypes)
       #pp col
       #pp index
 
-      each_row do |row|
+      each_row do |row, row_index|
         #pp row
         value = row.as(Array)[col.first_value]
         #pp value
         value_type = col_types[col.first_value]
         begin
-          series.push(value) if yield Matrix.parse_col(value, col.first_value), col, col.first_value
+          series << ({i: row_index + 1 , v: value}) if yield Matrix.parse_col(value, col.first_value), col, col.first_value
         rescue ex
           pp ex
           pp "Not a float: " + @headers[col.first_value] + " row: "  + index.to_s
@@ -187,7 +187,7 @@ class Matrix
     indexes = find_indexes(*columns)
     indexes.each_with_index do |col, index|
       series = [] of StoreTypes
-      each_row do |row|
+      each_row do |row, row_index|
         value = row.as(Array)[col.first_value]
         begin
           series.push(value)

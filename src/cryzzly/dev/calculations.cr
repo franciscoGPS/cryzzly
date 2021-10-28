@@ -13,6 +13,7 @@ module Calculations
   end
 
   add_store_types(String)
+  
   define_datatypes
 
   def shape

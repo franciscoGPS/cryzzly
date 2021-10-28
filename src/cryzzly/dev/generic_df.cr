@@ -57,22 +57,6 @@ row = %({
 #pp df.mean("col1", "col2", "col3", "col4")
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #def parse_index_column(value, index_type, index_format)
 #  def_tz = Time::Location.load("America/Chihuahua")
 #  begin
@@ -131,7 +115,7 @@ row = %({
 #end
 ###
 #def resolve_matrix_type
-  [] of Array( Int8 | Int16 | Int32 | Int64 | Float32 | Float64 )
+  #[] of Array( Int8 | Int16 | Int32 | Int64 | Float32 | Float64 )
 #end
 #
 #def parse_index?(index_type, col_type)
@@ -170,6 +154,6 @@ row = %({
 #  Matrixframe.new(data, headers_array, index_col, col_type)
 #end
 
-def gen_col_names(num)
-  (1..num).map { |i| "col_#{i}" }
-end 
+#def gen_col_names(num)
+#  (1..num).map { |i| "col_#{i}" }
+#end 

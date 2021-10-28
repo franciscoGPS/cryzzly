@@ -5,9 +5,9 @@ require "./*"
 
 filename = "./src/cryzzly/dev/sample.csv"
 
-cols = ["datetime", "Int32", "Int32", "Float64", "Float64", "String"]
+cols = ["Time", "Int32", "Int32", "Float64", "Float64", "String"]
 
-df = Matrix.load_csv(filename, index_col: 0, index_type: "datetime", cols_types: cols )
+df = Matrix.load_csv(filename, index_col: 0, index_type: "Time", cols_types: cols )
 
 pp df.sum("col1", "col2", "col3", "col4")
 #

@@ -6,7 +6,6 @@ require "aquaplot"
 class Matrix
   include Calculations
 
-
   def self.resolve_matrix_type
     [] of Array(StoreTypes)
   end
@@ -15,12 +14,14 @@ class Matrix
   getter col_types : Array(String)
   getter index_col : Int32
   getter data : Array(Array(StoreTypes))
+  getter index_type : String
 
- def initialize(data, headers = [] of String, index_col = -1, col_types = [] of String)
+ def initialize(data, headers = [] of String, index_col = -1, col_types = [] of String, index_type = "")
     @headers = headers
     @data = data
     @col_types = col_types
     @index_col = index_col
+    @index_type = ""
     begin
       Tensor.from_array(data)
     rescue ex
@@ -30,10 +31,10 @@ class Matrix
   end
 
   def self.parse_index?(index_type, col_type, index_col)
-    index_col > 0 && index_type == "datetime" && col_type != nil
+    index_col > 0 && index_type == "Time" && col_type != nil
   end
   
-  def self.load_csv(filename, index_col = -1, index_type="datetime", index_format="%Y-%m-%d %H:%M:%S", headers = true, cols_types = [] of String )
+  def self.load_csv(filename, index_col = -1, index_type="Time", index_format="%Y-%m-%d %H:%M:%S", headers = true, col_types = [] of String )
     pp "Loading CSV File"
     pp "Filename: " + filename
     pp "Index column: " + index_col.to_s
@@ -45,13 +46,13 @@ class Matrix
     headers = true
     headers_array = each_csv_row(filename, headers: headers) do |parser|
       temp_row = [] of StoreTypes
-      consider_index = parse_index?(index_type, cols_types, index_col)
+      consider_index = parse_index?(index_type, col_types, index_col)
       parser.row.to_a.each_with_index do  |val, index|
   
         if consider_index && index == index_col
-          parsed =  parse_index_column(val, cols_types[index], index_format)
+          parsed =  parse_index_column(val, col_types[index], index_format)
         else
-          parsed = parse_col(val, cols_types[index])
+          parsed = parse_col(val, col_types[index])
         end
         temp_row.push(parsed)
       end
@@ -60,16 +61,17 @@ class Matrix
     if headers_array.empty? 
       size = data[0].size || 1
       headers_array = gen_col_names(size)
-    end 
+    end
   
-    Matrix.new(data, headers_array, index_col, cols_types)
+    Matrix.new(data, headers: headers_array, index_col: index_col, col_types: col_types, index_type: index_type)
   end
 
   def self.parse_index_column(value, index_type, index_format)
+    pp index_type
     def_tz = Time::Location.load("America/Chihuahua")
     begin
-      if index_type == "datetime"
-        parsed = Time.parse(value, index_format, def_tz).to_unix_ms.to_f
+      if index_type == "Time"
+        parsed = Time.parse(value, index_format, def_tz).to_unix_ms
       elsif 
         parsed = value.to_f
       end
@@ -107,31 +109,6 @@ class Matrix
       val.to_s
     end
   end
-
-  def get_type_from_string(value_type)
-    begin    
-      case value_type
-      when "Int8"
-        Int8
-      when "Int16"
-        Int16
-      when "Int32"
-        Int32
-      when "Int64"
-        Int64
-      when "Float32"
-        Float32
-      when "Float64"
-        Float64
-      when "String"
-        String
-      else
-        String
-      end
-    rescue
-      String
-    end
-  end
   
   private def each_row
     @data.as(Array).each_with_index do |row, index|
@@ -151,35 +128,50 @@ class Matrix
     indexes
   end
 
-  # def select(*columns, &block)
-  #   to_array(*columns).each_with_index do |array_tuple, index|
-  #     yield array_tuple, index
-  #   end
-  # end
-
   def select(*columns : String, &block)
-    arrays = {} of String => Array(NamedTuple(i: Int32, v: StoreTypes))
+    result_hash = {} of String => Array({pk: StoreTypes, i: Int32, v: StoreTypes})
     indexes = find_indexes(*columns)
     indexes.each_with_index do |col, index|
-      series = [] of NamedTuple(i: Int32, v: StoreTypes)
-      #pp col
-      #pp index
-
+      series = [] of {pk: StoreTypes, i: Int32, v: StoreTypes}
       each_row do |row, row_index|
-        #pp row
         value = row.as(Array)[col.first_value]
-        #pp value
         value_type = col_types[col.first_value]
         begin
-          series << ({i: row_index + 1 , v: value}) if yield Matrix.parse_col(value, col.first_value), col, col.first_value
+          series << {i: row_index + 1, pk: row.as(Array)[@index_col], v: value} if yield Matrix.parse_col(value, col.first_value), col, col.first_value
         rescue ex
           pp ex
           pp "Not a float: " + @headers[col.first_value] + " row: "  + index.to_s
         end
-        arrays[col.first_key] = series
+        result_hash[col.first_key] = series
       end
     end
-    arrays
+    
+    
+    #Matrix.new(arrays, headers: headers_array, index_col: index_col, col_types: col_types, index_type: index_type)
+    build_matrixes_from_hash(result_hash)
+  end
+
+  def build_matrixes_from_hash(hash)
+    matrices = [] of Matrix
+    headers_array = [] of String
+    
+    hash.keys.each do |feature|
+      data = Matrix.resolve_matrix_type
+      col_types = [] of String
+      tuples = hash[feature]
+      
+      tuples.each do |tuple|
+        temp_row = [] of StoreTypes
+        temp_row << tuple[:pk]
+        temp_row << tuple[:v]
+        temp_row << tuple[:i]
+        col_types = [tuple[:pk].class.to_s, tuple[:v].class.to_s, tuple[:i].class.to_s] if col_types.empty?
+        data.push(temp_row) 
+      end
+
+      matrices << Matrix.new(data, headers: headers_array, index_col: 0, col_types: col_types, index_type: "String")
+    end
+    matrices
   end
 
   private def to_array(*columns : String)

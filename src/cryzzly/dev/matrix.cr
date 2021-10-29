@@ -116,7 +116,7 @@ class Matrix
     end
   end
 
-  def find_indexes(*columns : String)
+  def find_indexes(columns : Array(String))
     indexes = [{} of String => Int32] 
     
     columns.each do |column|
@@ -128,55 +128,75 @@ class Matrix
     indexes
   end
 
-  def select(*columns : String, &block)
-    result_hash = {} of String => Array({pk: StoreTypes, i: Int32, v: StoreTypes})
-    indexes = find_indexes(*columns)
-    indexes.each_with_index do |col, index|
-      series = [] of {pk: StoreTypes, i: Int32, v: StoreTypes}
-      each_row do |row, row_index|
-        value = row.as(Array)[col.first_value]
-        value_type = col_types[col.first_value]
-        begin
-          series << {i: row_index + 1, pk: row.as(Array)[@index_col], v: value} if yield Matrix.parse_col(value, col.first_value), col, col.first_value
-        rescue ex
-          pp ex
-          pp "Not a float: " + @headers[col.first_value] + " row: "  + index.to_s
+  def select(columns : Array(String), &block)
+    result_hash = {} of String => Array(Array(StoreTypes))
+    indexes = find_indexes(@headers)
+    series = [] of {pk: StoreTypes, i: Int32, v: StoreTypes}
+    full_rows = [] of Array(StoreTypes)
+    
+    each_row do |row, row_index|
+      temp_row = [] of StoreTypes
+      hash_row = converto_to_hash(row.as(Array), indexes) 
+      begin
+        if yield hash_row
+          indexes.each do |col|
+            temp_row << row.as(Array)[col.first_value] if columns.includes?(col.first_key)
+          end
         end
-        result_hash[col.first_key] = series
+        full_rows << temp_row if temp_row.any?
+      rescue ex
+        pp ex
+        #pp "Not a float: " + @headers[col.first_value] + " row: "  + index.to_s
       end
     end
-    
-    
-    #Matrix.new(arrays, headers: headers_array, index_col: index_col, col_types: col_types, index_type: index_type)
-    build_matrixes_from_hash(result_hash)
+    Matrix.new(full_rows, headers: columns, index_col: 0, col_types: col_types, index_type: "String")
+  end
+
+  def converto_to_hash(array, columns)
+    hash = {} of String => StoreTypes
+    columns.each do |col|
+      hash[col.first_key] = array[col.first_value]
+    end
+    hash
   end
 
   def build_matrixes_from_hash(hash)
     matrices = [] of Matrix
-    headers_array = [] of String
+    header = ""
     
     hash.keys.each do |feature|
       data = Matrix.resolve_matrix_type
       col_types = [] of String
+      headers_array = [] of String
       tuples = hash[feature]
       
       tuples.each do |tuple|
+        
+        next if tuple.size == 0 
+        if tuple.size > 0 && !headers_array.includes?(feature)
+          headers_array << "date"
+          headers_array << "row_id"
+          headers_array << feature
+        end
+
         temp_row = [] of StoreTypes
         temp_row << tuple[:pk]
-        temp_row << tuple[:v]
         temp_row << tuple[:i]
-        col_types = [tuple[:pk].class.to_s, tuple[:v].class.to_s, tuple[:i].class.to_s] if col_types.empty?
+        temp_row << tuple[:v]
+        col_types = [tuple[:pk].class.to_s, tuple[:i].class.to_s, tuple[:v].class.to_s] if col_types.empty?
+        
         data.push(temp_row) 
       end
-
-      matrices << Matrix.new(data, headers: headers_array, index_col: 0, col_types: col_types, index_type: "String")
+      if data.any?
+        matrices << Matrix.new(data, headers: headers_array, index_col: 0, col_types: col_types, index_type: "String")
+      end
     end
     matrices
   end
 
-  private def to_array(*columns : String)
+  private def to_array(columns : Array(String))
     arrays = {} of String => Array(StoreTypes)
-    indexes = find_indexes(*columns)
+    indexes = find_indexes(columns)
     indexes.each_with_index do |col, index|
       series = [] of StoreTypes
       each_row do |row, row_index|

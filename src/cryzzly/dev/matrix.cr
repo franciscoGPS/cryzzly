@@ -134,13 +134,19 @@ class Matrix
     series = [] of {pk: StoreTypes, i: Int32, v: StoreTypes}
     full_rows = [] of Array(StoreTypes)
     
+    column_types = {} of String => String
+    
     each_row do |row, row_index|
+      value_type = ""
       temp_row = [] of StoreTypes
       hash_row = converto_to_hash(row.as(Array), indexes) 
       begin
         if yield hash_row
           indexes.each do |col|
-            temp_row << row.as(Array)[col.first_value] if columns.includes?(col.first_key)
+            if columns.includes?(col.first_key)
+              temp_row << row.as(Array)[col.first_value] 
+              column_types[col.first_key] = col_types[col.first_value]
+            end
           end
         end
         full_rows << temp_row if temp_row.any?
@@ -149,7 +155,7 @@ class Matrix
         #pp "Not a float: " + @headers[col.first_value] + " row: "  + index.to_s
       end
     end
-    Matrix.new(full_rows, headers: columns, index_col: 0, col_types: col_types, index_type: "String")
+    Matrix.new(full_rows, headers: columns, index_col: 0, col_types: column_types.values, index_type: "String")
   end
 
   def converto_to_hash(array, columns)

@@ -25,10 +25,16 @@ result = df.select(["date", "col4", "col5"]) do |hash|
 end
 
 pp result
-pp result.sum(["col4"])
+##TODO:/ Set coltype
+pp result.sum(["col4"]) 
+
+
 #result = df.select("date", "col5","col2") do |value, column, value_type|
 #  true
 #end
+sorted = df.sort(["col4"]) do |col|
+  pp col
+end
 
 #pp result
 #result.each do |i|

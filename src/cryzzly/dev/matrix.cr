@@ -7,13 +7,13 @@ class Matrix
   include Calculations
 
   def self.resolve_matrix_type
-    [] of Array(StoreTypes)
+    [] of Array(Cell)
   end
 
   getter headers : Array(String)
   getter col_types : Array(String)
   getter index_col : Int32
-  getter data : Array(Array(StoreTypes))
+  getter data : Array(Array(Cell))
   getter index_type : String
 
  def initialize(data, headers = [] of String, index_col = -1, col_types = [] of String, index_type = "")
@@ -45,7 +45,7 @@ class Matrix
     headers_array = [] of String
     headers = true
     headers_array = each_csv_row(filename, headers: headers) do |parser|
-      temp_row = [] of StoreTypes
+      temp_row = [] of Cell
       consider_index = parse_index?(index_type, col_types, index_col)
       parser.row.to_a.each_with_index do  |val, index|
   
@@ -54,7 +54,7 @@ class Matrix
         else
           parsed = parse_col(val, col_types[index])
         end
-        temp_row.push(parsed)
+        temp_row.push(Cell.new(parsed))
       end
       data.push(temp_row) 
     end
@@ -129,16 +129,16 @@ class Matrix
   end
 
   def select(columns : Array(String), &block)
-    result_hash = {} of String => Array(Array(StoreTypes))
+    result_hash = {} of String => Array(Array(Cell))
     indexes = find_indexes(@headers)
-    series = [] of {pk: StoreTypes, i: Int32, v: StoreTypes}
-    full_rows = [] of Array(StoreTypes)
+    series = [] of {pk: Cell, i: Int32, v: Cell}
+    full_rows = [] of Array(Cell)
     
     column_types = {} of String => String
     
     each_row do |row, row_index|
       value_type = ""
-      temp_row = [] of StoreTypes
+      temp_row = [] of Cell
       hash_row = converto_to_hash(row.as(Array), indexes) 
       begin
         if yield hash_row
@@ -158,8 +158,14 @@ class Matrix
     Matrix.new(full_rows, headers: columns, index_col: 0, col_types: column_types.values, index_type: "String")
   end
 
+  def sort(columns : Array(String), &block)
+    each_row do |row, row_index|
+      yield row
+    end
+  end
+
   def converto_to_hash(array, columns)
-    hash = {} of String => StoreTypes
+    hash = {} of String => Cell
     columns.each do |col|
       hash[col.first_key] = array[col.first_value]
     end
@@ -185,7 +191,7 @@ class Matrix
           headers_array << feature
         end
 
-        temp_row = [] of StoreTypes
+        temp_row = [] of Cell
         temp_row << tuple[:pk]
         temp_row << tuple[:i]
         temp_row << tuple[:v]
@@ -201,10 +207,10 @@ class Matrix
   end
 
   private def to_array(columns : Array(String))
-    arrays = {} of String => Array(StoreTypes)
+    arrays = {} of String => Array(Cell)
     indexes = find_indexes(columns)
     indexes.each_with_index do |col, index|
-      series = [] of StoreTypes
+      series = [] of Cell
       each_row do |row, row_index|
         value = row.as(Array)[col.first_value]
         begin

@@ -1,16 +1,6 @@
 module Calculations
+  include Multitype
 
-  SUMMABLE_TYPES = [Int8, Int16, Int32, Int64, Float32, Float64]
-  STORE_MAPPINGS = [Int8, Int16, Int32, Int64, Float32, Float64]
-
-  macro define_datatypes
-    alias StoreTypes = Union({{*STORE_MAPPINGS}})
-    alias SummableTypes = Union({{*SUMMABLE_TYPES}})
-  end
-
-  macro add_store_types(type)
-    {{STORE_MAPPINGS.push(type)}}
-  end
 
   add_store_types(String)
   
@@ -29,7 +19,7 @@ module Calculations
 
 
   def mean(columns : Array(String))
-    avgs = {} of String => StoreTypes
+    avgs = {} of String => Cell
     column_size = shape[1]
     sum(columns).data[0].each_with_index do |sum_item, index|
       avgs[columns[index]] = sum_item.as(SummableTypes) / column_size if column_size > 0
@@ -42,7 +32,7 @@ module Calculations
   end
 
   def sum(columns : Array(String))
-    sums = {} of String =>  StoreTypes
+    sums = {} of String =>  Cell
     to_array(columns).each_with_index do |array_tuple, index|
       sum = 0
       array_tuple[1].map{ |e| sum += e.as(SummableTypes) }
@@ -52,7 +42,7 @@ module Calculations
   end
 
   def min(columns : Array(String))
-    mins = {} of String => StoreTypes
+    mins = {} of String => Cell
     to_array(columns).each_with_index do |array_tuple, index|
       mins[columns[index]] =  array_tuple[1].map{ |e| e.as(SummableTypes) }.min 
     end
@@ -60,7 +50,7 @@ module Calculations
   end
 
   def max(columns : Array(String))
-    maxs = {} of String => StoreTypes
+    maxs = {} of String => Cell
     to_array(columns).each_with_index do |array_tuple, index|
       maxs[columns[index]] = array_tuple[1].map{ |e| e.as(SummableTypes)}.max       
     end

@@ -7,10 +7,14 @@ end
 
 class Cell < AbstractCell
   include Multitype
+
+  def initialize(@value)
+    
+  end
   def eval_value
     @value
   end
-  def set_value(@value : StoreTypes)
+  def set_value(@value)
   end
 end
 
@@ -21,8 +25,8 @@ describe AbstractCell do
   multitype_array = [5,"string", 3.14, Time.local, false]
 
   multitype_array.each do |value|
-    cell = Cell.new
-    cell.set_value(value) 
+    cell = Cell.new(value)
+    #cell.set_value(value) 
     cell_array << cell  
   end
 

@@ -1,8 +1,10 @@
 module Multitype
-  STORE_MAPPINGS = [Int8, Int16, Int32, Int64, Float32, Float64, Time, Bool]
+  SUMMABLE_TYPES = [Int8, Int16, Int32, Int64, Float32, Float64]
+  STORE_MAPPINGS = [Int8, Int16, Int32, Int64, Float32, Float64]
 
-  macro define_datatype
-    alias StoreTypes = Union({{*STORE_MAPPINGS}})
+  macro define_datatypes
+    alias Cell = Union({{*STORE_MAPPINGS}})
+    alias SummableTypes = Union({{*SUMMABLE_TYPES}})
   end
 
   macro add_store_types(type)
@@ -10,6 +12,6 @@ module Multitype
   end
 
   add_store_types(String)
-  define_datatype
+  define_datatypes
 
 end

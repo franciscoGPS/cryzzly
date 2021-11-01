@@ -1,21 +1,33 @@
 require "spec"
-require "./multitype_defs"
+require "./multitype_interface"
 
 abstract class AbstractCell
-  abstract def eval_value
+  include Multitype
+
+  abstract def val
 end
 
 class Cell < AbstractCell
-  include Multitype
+  include Comparable(SortableTypes)
 
-  def initialize(@value)
-    
-  end
-  def eval_value
+  def initialize(@value : StoreTypes) ; end
+
+  def initialize(@value : SortableTypes) ; end
+
+  def val
     @value
   end
-  def set_value(@value)
+
+  def set_val(@value) ; end
+
+  def <=>(other : SortableTypes)
+    val.as(SortableTypes) <=> other.val.as(SortableTypes)
   end
+
+  def <=> (other : Cell)
+    val.as(SortableTypes) <=> other.val.as(SortableTypes)
+  end
+  
 end
 
 cell_array = [] of Cell
@@ -27,10 +39,10 @@ describe AbstractCell do
   multitype_array.each do |value|
     cell = Cell.new(value)
     #cell.set_value(value) 
-    cell_array << cell  
+    cell_array << cell 
   end
 
   it "The array is of multitype" do
-    cell_array.map{|e| e.eval_value }.should eq(multitype_array)
+    cell_array.map{|e| e.val }.should eq(multitype_array)
   end
 end

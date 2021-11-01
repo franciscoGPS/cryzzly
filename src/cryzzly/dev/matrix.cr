@@ -15,13 +15,16 @@ class Matrix
   getter index_col : Int32
   getter data : Array(Array(Cell))
   getter index_type : String
+  getter index_format : String
 
- def initialize(data, headers = [] of String, index_col = -1, col_types = [] of String, index_type = "")
+
+ def initialize(data, headers = [] of String, index_col = -1, col_types = [] of String, index_type = "", index_format="%Y-%m-%d %H:%M:%S")
     @headers = headers
     @data = data
     @col_types = col_types
     @index_col = index_col
     @index_type = ""
+    @index_format = index_format
     begin
       Tensor.from_array(data)
     rescue ex
@@ -63,7 +66,7 @@ class Matrix
       headers_array = gen_col_names(size)
     end
   
-    Matrix.new(data, headers: headers_array, index_col: index_col, col_types: col_types, index_type: index_type)
+    Matrix.new(data, headers: headers_array, index_col: index_col, col_types: col_types, index_type: index_type, index_format: index_format)
   end
 
   def self.parse_index_column(value, index_type, index_format)
@@ -159,8 +162,9 @@ class Matrix
   end
 
   def sort(columns : Array(String), &block)
-    each_row do |row, row_index|
-      yield row
+    to_array(columns).each_with_index do |array_tuple, index|
+      pp array_tuple.class
+      pp array_tuple[1].sort
     end
   end
 

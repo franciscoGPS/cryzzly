@@ -25,7 +25,11 @@ class Cell < AbstractCell
   end
 
   def <=> (other : Cell)
-    val.as(SortableTypes) <=> other.val.as(SortableTypes)
+    val.to_s.as(String) <=> other.val.to_s.as(String)
+  end
+
+  def <=> (other : String)
+    val.as(String) <=> other.val.as(String)
   end
   
 end

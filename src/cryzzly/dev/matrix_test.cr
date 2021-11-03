@@ -33,16 +33,21 @@ pp result.sum(["col4"])
 #result = df.select("date", "col5","col2") do |value, column, value_type|
 #  true
 #end
-sorted = df.sort(["col4"]) do |col|
-  #pp col
+sorted = nil
+df.sort(["col4"]) do |col|
+  sorted = col
 end
 
-#sorted = df.sort(["col5"]) do |col|
-#  #pp col
-#end
-
-
-#pp result
+pp sorted
+df.sort(["col5"]) do |col|
+  sorted = col
+end
+pp sorted
+sorted = nil
+df.sort(["date"]) do |col|
+  sorted = col
+end
+pp sorted
 #result.each do |i|
 #
 #  i 

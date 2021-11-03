@@ -21,8 +21,8 @@ module Multitype
   add_store_type(String)
   add_store_type(Bool)
   add_store_type(Time)
-  #add_sortable_type(String)
-  #add_sortable_type(Time)
+  add_sortable_type(String)
+  add_sortable_type(Time)
   define_datatypes
   
 

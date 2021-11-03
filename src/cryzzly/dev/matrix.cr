@@ -161,10 +161,13 @@ class Matrix
     Matrix.new(full_rows, headers: columns, index_col: 0, col_types: column_types.values, index_type: "String")
   end
 
-  def sort(columns : Array(String), &block)
+  def sort(columns : Array(String), asc : Bool = true, &block)
     to_array(columns).each_with_index do |array_tuple, index|
-      pp array_tuple.class
-      pp array_tuple[1].sort
+      if asc
+        yield array_tuple[1].sort
+      else
+        yield array_tuple[1].sort {|a,b| b <=> a} 
+      end
     end
   end
 

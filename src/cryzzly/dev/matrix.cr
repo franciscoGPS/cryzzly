@@ -18,18 +18,23 @@ class Matrix
   getter index_format : String
 
 
- def initialize(data, headers = [] of String, index_col = -1, col_types = [] of String, index_type = "", index_format="%Y-%m-%d %H:%M:%S")
-    @headers = headers
-    @data = data
-    @col_types = col_types
-    @index_col = index_col
-    @index_type = ""
-    @index_format = index_format
+ def initialize(@data, @headers = [] of String, @index_col = -1, @col_types = [] of String, @index_type = "", @index_format="%Y-%m-%d %H:%M:%S")
+    resolve_col_types(col_types)
     begin
       Tensor.from_array(data)
     rescue ex
       pp ex.message
       return
+    end
+  end
+
+  def resolve_col_types(types)
+    if types.empty?
+      @data.each do |col|
+        pp col.first
+      end
+    else 
+      @col_types = types
     end
   end
 
@@ -161,14 +166,28 @@ class Matrix
     Matrix.new(full_rows, headers: columns, index_col: 0, col_types: column_types.values, index_type: "String")
   end
 
+  def transform(columns : Array(String), &block)
+    transforms = {} of String =>  Array(Cell)
+    to_array(columns).each_with_index do |array_tuple, index|
+      transforms[columns[index]] = array_tuple[1].map{ |e| Cell.new(yield e.val) }
+    end
+      
+    Matrix.new(transforms.values, transforms.keys)
+  end
+
   def sort(columns : Array(String), asc : Bool = true, &block)
+    sorts = {} of String =>  Array(Cell)
     to_array(columns).each_with_index do |array_tuple, index|
       if asc
-        yield array_tuple[1].sort
+        sorts[columns[index]] = array_tuple[1].sort 
+        yield sorts[columns[index]]
       else
-        yield array_tuple[1].sort {|a,b| b <=> a} 
+        sorts[columns[index]] = array_tuple[1].sort {|a,b| b <=> a}  
+        yield sorts[columns[index]]
       end
+      
     end
+    Matrix.new(sorts.values, sorts.keys)
   end
 
   def converto_to_hash(array, columns)

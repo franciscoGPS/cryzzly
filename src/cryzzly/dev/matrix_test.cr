@@ -22,7 +22,12 @@ def_tz = Time::Location.load("America/Chihuahua")
 result = df.select(["date", "col4", "col5"]) do |hash|
   hash["col5"].val == "c" &&
   Time.parse(hash["date"].val.as(String), "%Y-%m-%d %H:%M:%S", Time::Location::UTC) >= Time.parse("2020-02-01 12:02:47.0", "%Y-%m-%d %H:%M:%S", Time::Location::UTC)
-  
+end
+
+
+result = df.select(["date", "col4", "col5"]) do |hash|
+  hash["col5"].val == "c" &&
+  Time.parse(hash["date"].val.as(String), "%Y-%m-%d %H:%M:%S", Time::Location::UTC) >= Time.parse("2020-02-01 12:02:47.0", "%Y-%m-%d %H:%M:%S", Time::Location::UTC)
 end
 
 pp result
@@ -34,22 +39,29 @@ pp result.sum(["col4"])
 #  true
 #end
 sorted = nil
-df.sort(["col4"]) do |col|
-  sorted = col
+
+df.sort(["col4"]) do |sorted_col|
+  sorted = sorted_col
 end
 
-pp sorted
-df.sort(["col5"]) do |col|
-  sorted = col
-end
-pp sorted
-sorted = nil
-df.sort(["date"]) do |col|
-  sorted = col
-end
-pp sorted
-#result.each do |i|
-#
-#  i 
-#end
 
+
+matrix =df.sort(["col5"]) do |sorted_col|
+  sorted = sorted_col
+end
+
+
+matrix = df.sort(["date"]) do |sorted_col|
+  sorted = sorted_col
+end
+pp matrix 
+
+result = df.select(["col4", "col5"]) do |hash|
+  hash["col5"].val == "c"
+end
+
+mult_filter = result.transform(["col4"]) do |val|
+  val.as(Float64) * 0.001
+end
+
+pp mult_filter

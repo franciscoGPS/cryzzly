@@ -1,5 +1,4 @@
 require "num"
-
 require "./../utils/*"
 require "aquaplot"
 
@@ -21,17 +20,37 @@ class Matrix
  def initialize(@data, @headers = [] of String, @index_col = -1, @col_types = [] of String, @index_type = "", @index_format="%Y-%m-%d %H:%M:%S")
     resolve_col_types(col_types)
     begin
-      Tensor.from_array(data)
     rescue ex
       pp ex.message
       return
     end
   end
 
+  def shape
+    #[columns number, size of each column
+    [length, @data.as(Array).size]
+  end
+
+  def length
+    #columns number
+    @data[0].as(Array).size
+  end
+
+  
+
+  def [](*args)
+    filter(["vl1_n"]) do |e|
+      
+    end
+
+
+  end
+  
+
   def resolve_col_types(types)
     if types.empty?
       @data.each do |col|
-        pp col.first
+        @col_types << col.first.val.class.to_s
       end
     else 
       @col_types = types
@@ -75,8 +94,7 @@ class Matrix
   end
 
   def self.parse_index_column(value, index_type, index_format)
-    pp index_type
-    def_tz = Time::Location.load("America/Chihuahua")
+    def_tz = Time::Location.load("America/Monterrey")
     begin
       if index_type == "Time"
         parsed = Time.parse(value, index_format, def_tz).to_unix_ms
@@ -136,7 +154,7 @@ class Matrix
     indexes
   end
 
-  def select(columns : Array(String), &block)
+  def filter(columns : Array(String), &block)
     result_hash = {} of String => Array(Array(Cell))
     indexes = find_indexes(@headers)
     series = [] of {pk: Cell, i: Int32, v: Cell}
@@ -180,14 +198,51 @@ class Matrix
     to_array(columns).each_with_index do |array_tuple, index|
       if asc
         sorts[columns[index]] = array_tuple[1].sort 
-        yield sorts[columns[index]]
       else
-        sorts[columns[index]] = array_tuple[1].sort {|a,b| b <=> a}  
-        yield sorts[columns[index]]
+        sorts[columns[index]] = array_tuple[1].sort {|a,b| b <=> a}
       end
+
+      yield sorts[columns[index]]
       
     end
     Matrix.new(sorts.values, sorts.keys)
+  end
+
+  def sort_by(column : String, asc : Bool = true, &block)
+    arrays = {} of String => Array(Cell)
+    result_hash = {} of String =>  Hash(String, Cell)
+    result_array = [] of Hash(String, Cell)
+    indexes = find_indexes(@headers)
+    series = [] of {pk: Cell, i: Int32, v: Cell}
+    full_rows = [] of Array(Cell)
+    
+    column_types = {} of String => String
+    
+    each_row do |row, row_index|
+      value_type = ""
+      temp_row = [] of Cell
+      hash_row = converto_to_hash(row.as(Array), indexes) 
+      result_hash[row_index.to_s] = hash_row
+      result_array << hash_row
+    end
+    ordered = result_array.sort do |e1, e2|
+      e1[column].val.as(Int32) <=> e2[column].val.as(Int32)
+    end
+    indexes.each_with_index do |col, index|
+      series = [] of Cell
+      ordered.each do |row|
+        value = row.map{|e| e[1].val}[col.first_value]  
+        begin
+          series.push(Cell.new(value))
+        rescue ex
+          pp ex
+          pp "Not a float: " + @headers[col.first_value] + " row: "  + index.to_s
+        end
+        arrays[col.first_key] = series
+      end
+    end
+    Matrix.new(arrays.values, headers: @headers, index_col: 0, col_types: column_types.values, index_type: "String")
+    
   end
 
   def converto_to_hash(array, columns)
@@ -198,6 +253,7 @@ class Matrix
     hash
   end
 
+  ##UNUSED. KEEP FOR EXAMPLES
   def build_matrixes_from_hash(hash)
     matrices = [] of Matrix
     header = ""
@@ -230,6 +286,24 @@ class Matrix
       end
     end
     matrices
+  end
+
+
+  # Used to extract raw arrays 
+  def strip_fields(columns : Array(String), &block)
+    arrays = {} of String => Array(Cell)
+    indexes = find_indexes(columns)
+    indexes.each_with_index do |col, index|
+      each_row do |row, row_index|
+        cell = row.as(Array)[col.first_value]
+        begin
+          yield col.first_key,  cell.val
+        rescue ex
+          pp ex
+          pp "Not a float: " + @headers[col.first_value] + " row: "  + index.to_s
+        end
+      end
+    end
   end
 
   private def to_array(columns : Array(String))

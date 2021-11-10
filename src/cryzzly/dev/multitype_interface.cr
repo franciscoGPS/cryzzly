@@ -1,4 +1,5 @@
 module Multitype
+  extend self
   STORE_TYPES = [Int8, Int16, Int32, Int64, Float32, Float64]
   SUMMABLE_TYPES = [Int8, Int16, Int32, Int64, Float32, Float64]
   SORTABLE_TYPES = [Int8, Int16, Int32, Int64, Float32, Float64]

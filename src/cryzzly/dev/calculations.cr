@@ -2,6 +2,7 @@ require "./multitype_interface"
 
 module Calculations
   include Multitype
+  extend self
 
   def shape
     #[columns number, size of each column
@@ -14,6 +15,34 @@ module Calculations
     @data[0].size#.this.as(Array).size
   end
 
+  def includes?(column)
+    return false if @headers.empty?
+    @headers.includes?(column)
+  end
+
+  def head
+    first(5)
+  end
+
+  def first(n : Int32 = 1)
+    if n <= shape[1]
+      @data[0..n]
+    else
+      @data
+    end
+  end
+
+  def tail
+    last(5)
+  end
+
+  def last(n : Int32 = 1)
+    if n <= shape[1]
+      @data[n..-1]
+    else
+      @data
+    end
+  end
 
   def mean(columns : Array(String))
     avgs = {} of String => Cell

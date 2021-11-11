@@ -110,11 +110,21 @@ b = [[3, 4, 5, 6], [5, 6, 7, 8]].to_tensor
 
 puts a + b
 
-pp df[["col3", "col4"]]
-
 
 sorted = df.sort_by("col1") do |item2|
   
 end
 
-pp sorted
+
+
+pp sorted.includes?("col1")
+
+
+
+pp sorted.includes?("col5")
+
+
+pp df[["col1", "col5"]]
+
+
+#pp sorted.sum(["col3"])

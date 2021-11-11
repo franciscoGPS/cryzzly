@@ -28,7 +28,7 @@ class Matrix
 
   def shape
     #[columns number, size of each column
-    [length, @data.as(Array).size]
+    [length, size]
   end
 
   def length
@@ -36,16 +36,9 @@ class Matrix
     @data[0].as(Array).size
   end
 
-  
-
-  def [](*args)
-    filter(["vl1_n"]) do |e|
-      
-    end
-
-
+  def size
+    @data.as(Array).size
   end
-  
 
   def resolve_col_types(types)
     if types.empty?
@@ -152,6 +145,12 @@ class Matrix
     end
     indexes.delete_at(0) ## Cleaning empty objects when initializing
     indexes
+  end
+
+  def [](columns : Array(String))
+    return self.filter(columns) do |_|
+      true
+    end
   end
 
   def filter(columns : Array(String), &block)

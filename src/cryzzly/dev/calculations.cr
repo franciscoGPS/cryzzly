@@ -26,9 +26,9 @@ module Calculations
 
   def first(n : Int32 = 1)
     if n <= shape[1]
-      @data[0..n]
+      Matrix.new(@data[0..n-1], @headers)
     else
-      @data
+      self
     end
   end
 
@@ -38,9 +38,9 @@ module Calculations
 
   def last(n : Int32 = 1)
     if n <= shape[1]
-      @data[n..-1]
+      Matrix.new(@data[n-1..-1], @headers)
     else
-      @data
+      self
     end
   end
 

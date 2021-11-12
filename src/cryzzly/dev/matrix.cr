@@ -135,6 +135,14 @@ class Matrix
     end
   end
 
+  private def each_row_to_modify
+    @data.as(Array).each_with_index do |row, index|
+      row = yield row, index
+      @data[index] = row
+    end
+  end
+
+
   def find_indexes(columns : Array(String))
     indexes = [{} of String => Int32] 
     
@@ -326,5 +334,22 @@ class Matrix
 
   def self.gen_col_names(num)
     (1..num).map { |i| "col_#{i}" }
+  end
+
+  def add(column : String, values : Array(StoreTypes))
+    self[column] = values
+  end
+
+  def []=(column : String, values : Array(StoreTypes))
+    if values.size != size
+      raise "Column size != to data columns size"
+    else
+      cells = values.map{|e| Cell.new(e)}
+      each_row_to_modify do |row, row_index|
+        row << cells[row_index]
+      end
+      @headers << column
+    end
+    self
   end
 end

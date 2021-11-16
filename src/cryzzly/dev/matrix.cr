@@ -1,5 +1,7 @@
 require "num"
 require "./../utils/*"
+require "./calculations.cr"
+require "./abstract_cell.cr"
 require "aquaplot"
 
 class Matrix
@@ -17,7 +19,7 @@ class Matrix
   getter index_format : String
 
 
- def initialize(@data, @headers = [] of String, @index_col = -1, @col_types = [] of String, @index_type = "", @index_format="%Y-%m-%d %H:%M:%S")
+  def initialize(@data, @headers = [] of String, @index_col = -1, @col_types = [] of String, @index_type = "", @index_format="%Y-%m-%d %H:%M:%S")
     resolve_col_types(col_types)
     begin
     rescue ex
@@ -295,22 +297,26 @@ class Matrix
     matrices
   end
 
-
   # Used to extract raw arrays 
-  def strip_fields(columns : Array(String), &block)
+  def raw(columns : Array(String) = [] of String)
+    columns = @headers if columns.empty?
     arrays = {} of String => Array(Cell)
+    raw_row = [] of StoreTypes
     indexes = find_indexes(columns)
-    indexes.each_with_index do |col, index|
-      each_row do |row, row_index|
-        cell = row.as(Array)[col.first_value]
-        begin
-          yield col.first_key,  cell.val
-        rescue ex
-          pp ex
-          pp "Not a float: " + @headers[col.first_value] + " row: "  + index.to_s
-        end
+    raw_data = [] of  Array(StoreTypes)
+    each_row do |row, row_index|
+      indexes.each_with_index do |col, index|
+        raw_row << row.as(Array)[col.first_value].val
+        #begin
+        #  yield col.first_key, cell.val
+        #rescue ex
+        #  pp ex
+        #  pp "Not a float: " + @headers[col.first_value] + " row: "  + index.to_s
+        #end
       end
+      raw_data << raw_row
     end
+    raw_data
   end
 
   private def to_array(columns : Array(String))
@@ -351,5 +357,83 @@ class Matrix
       @headers << column
     end
     self
+  end
+
+  def plot(columns : Array(String), filename = Time.now.to_s)
+    arrays = [] of Array(SummableTypes)
+    array_x = [] of SummableTypes
+    headers = [] of String
+    indexes = find_indexes(columns)
+
+    #Appending columns
+    to_array(columns).each_with_index do |array_tuple, index|
+      arrays.push(array_tuple[1].map{|e| e.val.as(SummableTypes ) }.as(Array(SummableTypes)) )
+    end
+    
+    #Selecting x axis values
+    array_x = [] of Int32
+    #each_row do |row, index|
+    #  #pp @index_col
+    #  x_val = row.as(Array)[@index_col] if @index_col > -1
+    #  pp x_val
+    #  if x_val.responds_to?(:val)
+    #    begin
+    #      #index_x_val =
+    #      pp x_val.val
+    #    rescue ex
+    #      pp ex
+    #      pp "Not a float: " + @headers[@index_col] + " row: " + row.to_s
+    #    end
+    #  end
+    #end 
+    array_x.concat((0..size).step(by: 1).to_a)
+    
+    generate_chart(arrays, array_x, headers: columns, filename: filename )
+  end
+
+  private def generate_chart(arraylist, array_x, headers = [] of String, title = "", filename = Time.now.to_s)
+    #pp arraylist
+    #pp headers
+    lines = arraylist.map_with_index do |n, i|
+      if headers.any?
+        AquaPlot::Line.new n, title: "#{headers[i]}"
+      else
+        AquaPlot::Line.new n
+      end
+    end
+
+    #pp lines
+    plt = AquaPlot::Plot.new lines
+    plt.set_title(title)
+    
+
+    pp "Image stored in: " + filename + ".png"
+    plt.savefig(filename+".png")
+    plt.close
+  end
+
+  def to_csv(columns, filename = Time.local.to_s, headers = true)
+    indexes = find_indexes(columns)
+    indexes_array = indexes.map{ |i| i.first_value}
+    values = [] of String
+    result = CSV.build do |csv|
+      csv.row(columns) if headers
+      each_row do |row|
+        row_array = row_to_a(row)
+        csv.row(indexes.map{ |i| row_array.values_at( i.first_value ).map{|a| a.val }.first })
+      end
+    end
+    save_csv(filename, result)
+  end
+
+  private def row_to_a(row)
+    #Arreglar la iteración del arreglo row y regresar solo los valores requeridos
+    #usar values at
+    value = row.as(Array)
+  end
+
+  private def save_csv(filename, data)
+    pp "File stored in: " + filename + ".csv"
+    File.write(filename+".csv", data)
   end
 end

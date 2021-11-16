@@ -64,7 +64,7 @@ module Calculations
       array_tuple[1].map{ |e| sum += e.val.as(SummableTypes) }
       sums[columns[index]] = Cell.new(sum.as(SummableTypes))
     end
-    Matrix.new([sums.values], sums.keys)
+    Matrix.new([sums.values], columns)
   end
 
   def min(columns : Array(String))
@@ -81,6 +81,33 @@ module Calculations
       maxs[columns[index]] = Cell.new(array_tuple[1].map{ |e| e.val.as(SummableTypes)}.max)
     end
     Matrix.new([maxs.values], maxs.keys)
+  end
+
+  def std(columns : Array(String))
+    stds = {} of String => Cell
+    indexes = find_indexes(columns)
+    means_df = mean(columns)
+    indexes.each_with_index do |col, index|
+      std_dev = [] of SummableTypes
+      each_row do |row|
+        sum = 0.0
+        cell = row.as(Array)[col.first_value]
+        begin
+          float_val = cell.val.as(SummableTypes)
+
+          current_mean = means_df.data[0][index].val.as(SummableTypes)
+          substact = (current_mean - float_val )
+          sum += substact * substact
+          
+        rescue ex
+          pp ex
+          pp "Not a float: " + @headers[col.first_value] + " row: "  + index.to_s
+        end
+        
+        stds[col.first_key] = Cell.new(Math.sqrt(sum / (shape[1] - 1)))
+      end
+    end
+    Matrix.new([stds.values], stds.keys)
   end
   
 end
